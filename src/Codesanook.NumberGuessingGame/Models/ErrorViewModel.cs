@@ -1,4 +1,4 @@
-namespace Codesanook.NumberGuessingGame.Models;
+namespace NumberGuessingGame.Models;
 
 public class ErrorViewModel
 {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Codesanook.NumberGuessingGame.Models;
+using NumberGuessingGame.Models;
 
 namespace Codesanook.NumberGuessingGame.Controllers;
 
