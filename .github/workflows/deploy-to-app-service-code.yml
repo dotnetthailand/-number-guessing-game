@@ -1,0 +1,66 @@
+# .github/workflows/deploy-to-app-service-code.yml
+name: Deploy ASP.NET Core MVC app to Azure App Service Code
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  OUTPUT_DIR: publish # Relative to a current working directory
+  DOTNET_VERSION: 6.0.x # Set .NET version to use
+  NODE_VERSION: 12.x # Set Node.js version to use
+
+jobs:
+  build:
+    # Find more virtual environments
+    # https://www.dotnetthailand.com/programming-cookbook/github-actions/github-actions-fundamentals#findmorevirtualenvironments
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the latest source code from ${{ github.ref }} commit
+        uses: actions/checkout@v2
+
+      - name: Set YARN_WORKSPACES_EXIST variable
+        run: |
+          workspaces_info_result=$(yarn workspaces info > /dev/null 2>&1; echo $?; exit 0)
+          if [ $workspaces_info_result -eq 0 ]; then echo "YARN_WORKSPACES_EXIST=1" >> $GITHUB_ENV; fi
+
+      # https://github.com/actions/setup-node
+      - name: Use Node.js version ${{ env.NODE_VERSION }}
+        if: ${{ env.YARN_WORKSPACES_EXIST == 1 }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build all Node.js projects if Yarn Workspaces exists
+        if: ${{ env.YARN_WORKSPACES_EXIST == 1 }}
+        run: |
+          yarn install
+          yarn workspaces run build
+
+      # https://github.com/actions/setup-dotnet
+      - name: Setup .NET SDK version ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Assume that we have a solution file in in a root directory
+      - name: Restore Nuget packages 
+        run: |
+          pwd
+          ls
+          dotnet restore
+
+      - name: Publish a .NET project to ${{ env.OUTPUT_DIR }}
+        run: dotnet publish --configuration Release --output ${{ env.OUTPUT_DIR }} --no-restore
+        working-directory: ${{ secrets.WEB_PROJECT_DIR }}
+
+      # Before downloading a publish profile,
+      # please make sure you have set WEBSITE_WEBDEPLOY_USE_SCM in App Service configuration to true.
+      - name: Deploy to Azure App Service code publish
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_CODE_PUBLISH_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_CODE_PUBLISH_PROFILE }}
+          package: ${{ secrets.WEB_PROJECT_DIR }}/${{ env.OUTPUT_DIR }}
