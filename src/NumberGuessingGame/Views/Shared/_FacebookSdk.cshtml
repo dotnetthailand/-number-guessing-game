@@ -1,0 +1,23 @@
+@inject IOptions<ApplicationConfiguration> config
+
+<script type="text/javascript">
+  window.fbAsyncInit = function () {
+    FB.init({
+      appId: @config.Value.FacebookAppId,//test
+      cookie: true,  // enable cookies to allow the server to access the session
+      xfbml: true,  // parse social plug ins on this page
+      version: 'v2.4'
+    });
+    // Additional initialization code here
+  };
+  (function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {
+      return;
+    }
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+</script>

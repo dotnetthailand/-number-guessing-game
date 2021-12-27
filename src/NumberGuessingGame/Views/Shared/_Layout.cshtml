@@ -13,7 +13,10 @@
 </head>
 
 <body>
+  @await Html.PartialAsync("_FacebookSdk")
   @RenderBody()
+
+  @Html.ReactInitJavaScript()
 </body>
 
 </html>

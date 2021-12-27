@@ -31,24 +31,24 @@ namespace NumberGuessingGame.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("FinishedUtc")
-                        .HasColumnType("int")
+                    b.Property<DateTime>("FinishedUtc")
+                        .HasColumnType("datetime2")
                         .HasColumnName("finished_utc");
 
                     b.Property<string>("Rule")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("rule");
 
                     b.Property<string>("Title")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("title");
 
                     b.HasKey("Id")
-                        .HasName("pk_games");
+                        .HasName("pk_game");
 
-                    b.ToTable("games", (string)null);
+                    b.ToTable("game", (string)null);
                 });
 
             modelBuilder.Entity("NumberGuessingGame.Models.Player", b =>
@@ -70,12 +70,12 @@ namespace NumberGuessingGame.Migrations
                         .HasColumnName("played_at_utc");
 
                     b.HasKey("UserId", "GameId")
-                        .HasName("pk_players");
+                        .HasName("pk_player");
 
                     b.HasIndex("GameId")
-                        .HasDatabaseName("ix_players_game_id");
+                        .HasDatabaseName("ix_player_game_id");
 
-                    b.ToTable("players", (string)null);
+                    b.ToTable("player", (string)null);
                 });
 
             modelBuilder.Entity("NumberGuessingGame.Models.User", b =>
@@ -88,34 +88,38 @@ namespace NumberGuessingGame.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Email")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("email");
 
-                    b.Property<string>("FacebookUrl")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasColumnName("facebook_url");
+                    b.Property<long>("FacebookAppScopedUserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("facebook_app_scoped_user_id");
 
                     b.Property<string>("FirstName")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
                         .HasColumnName("last_name");
 
-                    b.Property<string>("Username")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)")
-                        .HasColumnName("username");
+                    b.Property<string>("Name")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)")
+                        .HasColumnName("profile_picture_url");
 
                     b.HasKey("Id")
-                        .HasName("pk_users");
+                        .HasName("pk_user");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("user", (string)null);
                 });
 
             modelBuilder.Entity("NumberGuessingGame.Models.Player", b =>
@@ -125,14 +129,14 @@ namespace NumberGuessingGame.Migrations
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_players_games_game_id");
+                        .HasConstraintName("fk_player_games_game_id");
 
                     b.HasOne("NumberGuessingGame.Models.User", "User")
                         .WithMany("Players")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_players_users_user_id");
+                        .HasConstraintName("fk_player_users_user_id");
 
                     b.Navigation("Game");
 

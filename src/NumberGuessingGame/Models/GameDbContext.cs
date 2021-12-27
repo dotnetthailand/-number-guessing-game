@@ -26,15 +26,21 @@ namespace NumberGuessingGame.Models
                         .HasForeignKey(p => p.GameId),
                     j =>
                     {
+                        j.ToTable("player");
                         // j.Property(pt => pt.PublicationDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
                         j.HasKey(p => new { p.UserId, p.GameId });
                     });
 
+
+            modelBuilder.Entity<User>().ToTable("user")
+                .Property(u => u.ProfilePictureUrl).HasMaxLength(512);
+
+            modelBuilder.Entity<Game>().ToTable("game");
         }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
-            configurationBuilder.Properties<string>().HaveMaxLength(32);
+            configurationBuilder.Properties<string>().HaveMaxLength(128);
         }
     }
 

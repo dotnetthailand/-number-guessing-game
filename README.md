@@ -144,7 +144,12 @@ dotnet add package JavascriptEngineSwitcher.ChakraCore
 dotnet add package JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64
 dotnet add package JavaScriptEngineSwitcher.Extensions.MsDependencyInjection
 
+// React 
+https://reactjs.net/tutorials/aspnetcore.html
 
+# Facebook C# SDK
+
+dotnet add package Facebook
 ## TODO
 - [ ] Global exception
 - [ ] Deploy to a cheap MySQL server

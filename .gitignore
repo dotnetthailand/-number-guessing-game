@@ -351,3 +351,5 @@ MigrationBackup/
 
 wwwroot/*
 !wwwroot/favicon.ico
+
+appsettings.development.json

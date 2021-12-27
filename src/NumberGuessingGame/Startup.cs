@@ -8,18 +8,28 @@ namespace NumberGuessingGame
 {
     public class Startup
     {
+        // !!! Note that appsettings.json will be registered by default in .NET Core 2.0.
+        private readonly IConfiguration configuration;
+
         public Startup(IConfiguration configuration) => this.configuration = configuration;
 
-        // !!! Note that appsettings.json will be registered by default in .NET Core 2.0.
-        private IConfiguration configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // https://damienbod.com/2016/07/13/injecting-configurations-in-razor-views-in-asp-net-core/
+            services.Configure<ApplicationConfiguration>(configuration.GetSection("ApplicationConfiguration"));
+
             // Make sure a JS engine is registered, or you will get an error!
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddReact();
             services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName).AddChakraCore();
+
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);//You can set Time   
+            });
 
             services
                 .AddControllersWithViews();
@@ -55,13 +65,14 @@ namespace NumberGuessingGame
             {
                 config
                     .SetLoadBabel(false) // We have already transformed React code from Webpack
-                    // The path is relative to the main wwwroot folder of the main project 
+                                         // The path is relative to the main wwwroot folder of the main project 
                     .AddScriptWithoutTransform("scripts/site.js");
             });
 
             app.UseStaticFiles();
-            app.UseRouting();
+            app.UseSession();
 
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 // Default to Home/index
