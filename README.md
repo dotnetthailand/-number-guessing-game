@@ -104,12 +104,12 @@ dotnet add package Microsoft.EntityFrameworkCore.InMemory
 
 ## Create empty solution file
 ```sh
-dotnet new sln --name Codesanook.EFNote
+dotnet new sln --name NumberGuessingGame
 ```
 
 ## Add existing project to a solution file
 ```sh
-dotnet sln add ./Codesanook.EFNote/Codesanook.EFNote.csproj
+dotnet sln add ./src/NumberGuessingGame/NumberGuessingGame.csproj
 ```
 
 ## Work with database migration
@@ -137,6 +137,13 @@ dotnet sln add ./Codesanook.EFNote/Codesanook.EFNote.csproj
   ```sh
   dotnet tool update --global dotnet-ef
   ```
+# Add React.NET
+
+dotnet add package React.AspNet
+dotnet add package JavascriptEngineSwitcher.ChakraCore
+dotnet add package JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64
+dotnet add package JavaScriptEngineSwitcher.Extensions.MsDependencyInjection
+
 
 ## TODO
 - [ ] Global exception

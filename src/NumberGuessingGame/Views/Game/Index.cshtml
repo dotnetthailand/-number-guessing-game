@@ -1,0 +1,15 @@
+﻿@model IEnumerable<Player>
+@{
+  ViewData["Title"] = "Home Page";
+}
+
+<ul>
+  @foreach (var item in Model)
+  {
+    <li>@item.User.FirstName</li>
+  }
+</ul>
+
+
+@Html.React("NumberGuessingGame.Counter", new { initValue = 99})
+@Html.ReactInitJavaScript()

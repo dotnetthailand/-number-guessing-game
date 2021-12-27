@@ -1,3 +1,3 @@
 #! /bin/bash
 
-dotnet watch run --project ./src/Codesanook.NumberGuessingGame/Codesanook.NumberGuessingGame.csproj
+dotnet watch run --project ./src/NumberGuessingGame/NumberGuessingGame.csproj
