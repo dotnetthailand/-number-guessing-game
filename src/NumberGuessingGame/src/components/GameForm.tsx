@@ -34,7 +34,7 @@ export default function GameForm({ gameId }: Props) {
     };
 
     // Delay for FB SDK to be ready
-    setTimeout(() => getLogInStatus(), 2000);
+    setTimeout(() => getLogInStatus(), 1100);
 
   }, []);
 
@@ -61,7 +61,7 @@ export default function GameForm({ gameId }: Props) {
       alert("Thanks for playing the game with us");
       location.href = '/'; // Reload the page
     } catch (error: any) {
-      alert(error.response.data);
+      alert(error.response.data.errorMessage);
     }
   };
 

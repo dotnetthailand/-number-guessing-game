@@ -3,6 +3,8 @@ using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
 using React.AspNet;
 using Microsoft.EntityFrameworkCore;
 using NumberGuessingGame.Models;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace NumberGuessingGame
 {
@@ -42,23 +44,25 @@ namespace NumberGuessingGame
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            app.UseExceptionHandler(a => a.Run(async context =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionHandlerPathFeature.Error;
+                await context.Response.WriteAsJsonAsync(
+                    new { 
+                        errorMessage = exception.Message, 
+                        errorType = exception.GetType().Name 
+                    }
+                );
+            }));
 
             // Initialize ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {
                 config
-                    .SetLoadBabel(false) // We have already transformed React code from Webpack
-                                         // The path is relative to the main wwwroot folder of the main project 
+                    // We have already transformed React code from Webpack
+                    .SetLoadBabel(false)
+                    // The path is relative to the main wwwroot folder of the main project 
                     .AddScriptWithoutTransform("scripts/site.js");
             });
 
