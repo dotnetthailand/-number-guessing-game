@@ -1,2 +1,3 @@
 wwwroot/*
 !wwwroot/favicon.ico
+!wwwroot/images

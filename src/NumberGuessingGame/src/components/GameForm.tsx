@@ -81,7 +81,7 @@ export default function GameForm({ gameId }: Props) {
               ?
               <form onSubmit={handleGuessedNumberSubmit} className="game-form d-flex flex-column justify-content-center">
                 <span className="header-game">Number Guessing Game</span>
-                <input type="text" className="form-control input-guessedNumber rounded-pill" name="GuessedNumber" placeholder='Put your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
+                <input type="text" className="form-control input-guessedNumber rounded-pill" name="GuessedNumber" placeholder='Enter your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
                 <button className="btn rounded-pill btn-guess" type="submit">Guess 2 digits number</button>
               </form>
               :

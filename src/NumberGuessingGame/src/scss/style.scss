@@ -1,2 +1,146 @@
 // https://react-bootstrap.github.io/getting-started/introduction#customize-bootstrap
 @import "~bootstrap/scss/bootstrap";
+
+$urlImage: "/images";
+
+body {
+  @media (min-width: 1130px) {
+    max-width: 1130px;
+    margin: 0px auto;
+  }
+}
+
+.main-container {
+  $height-background: 240px;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: $height-background;
+  background-image: url($urlImage + "/background.jpg");
+
+  &.-none-background {
+    margin: 25px 0px;
+    min-height: unset;
+    background-image: unset;
+    max-height: calc(100vh - $height-background - 10px - 1rem);
+    overflow: auto;
+  }
+
+  > .loading-text {
+    font-size: 24px;
+  }
+
+  @media (min-width: 768px) {
+    min-height: 250px;
+
+    &.-none-background {
+      max-height: 100vh;
+    }
+
+    > .loading-text {
+      font-size: 34px;
+    }
+  }
+}
+
+.game-form {
+  > .header-game {
+    font: 500 2rem Roboto;
+  }
+
+  > .input-guessedNumber {
+    text-align: center;
+    margin: 10px 0px;
+    font-size: 20px;
+    outline: none;
+    color: #000;
+    padding: 0;
+    height: 45px;
+    border: 0;
+  }
+
+  > .input-guessedNumber:focus {
+    box-shadow: 0 0 0 0.15rem #8585854d;
+  }
+
+  > .btn-guess {
+    color: #fff;
+    background-color: #10abee;
+    border-color: #10abee;
+  }
+
+  @media (min-width: 768px) {
+    > .header-game {
+      font-size: 4rem;
+    }
+
+    > .input-guessedNumber {
+      font-size: 28px;
+      font-weight: lighter;
+      padding: 10px 0px;
+      height: auto;  
+    }
+
+    > .btn-guess { 
+      font-size: 26px;
+    }
+  }
+}
+
+
+.-gap-sm {
+  @media (min-width: 330px) {
+    gap: 10px;
+  }
+}
+
+.table-played {
+  border-collapse: collapse;
+  margin: 0px;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+
+  th {
+    width: 30%;
+    padding: 12px 15px;
+    text-align: center;
+  }
+
+  td {
+    padding: 5px 15px;
+    text-align: center;
+  }
+
+  td.-text-left {
+    text-align: left;
+  }
+
+  td:nth-child(1), 
+  th:nth-child(1) {
+    width: 10%;
+  }
+
+  thead tr {
+    vertical-align: middle;
+    background-color: #10abee;
+    color: #ffffff;
+    text-align: left;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #dddddd;
+  }
+
+  tbody tr:nth-of-type(even) {
+    background-color: #10abee38;
+  }
+
+  tbody tr:last-of-type {
+    border-bottom: 2px solid #10abee;
+  }
+
+  tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+  }
+}
