@@ -71,29 +71,30 @@ export default function GameForm({ gameId }: Props) {
 
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
-    <>
+    <div className="main-container d-flex justify-content-center align-items-center mt-3">
       {isLoading
-        ? <div>Loading the game...</div>
+        ? <div className="loading-text">Loading the game...</div>
         :
         <div>
           {
             isLogIn
               ?
-              <form onSubmit={handleGuessedNumberSubmit}>
-                <input type="text" name="GuessedNumber" placeholder='Put your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
-                <button type="submit">Guess 2 digits number</button>
+              <form onSubmit={handleGuessedNumberSubmit} className="game-form d-flex flex-column justify-content-center">
+                <span className="header-game">Number Guessing Game</span>
+                <input type="text" className="form-control input-guessedNumber rounded-pill" name="GuessedNumber" placeholder='Put your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
+                <button className="btn rounded-pill btn-guess" type="submit">Guess 2 digits number</button>
               </form>
               :
               <div>
-                <FontAwesomeIcon icon={faFacebook} size='2x' color='#1198F6' />
-                <Button onClick={handleOnClick}>
+                <Button onClick={handleOnClick} className="d-flex flex-row align-items-center -gap-sm">
+                  <FontAwesomeIcon icon={faFacebook} size='2x' color='#fff' />
                   Log in with Facebook to play a game
                 </Button>
               </div>
           }
         </div>
       }
-    </>
+    </div>
   );
 }
 
