@@ -17,6 +17,7 @@ export default function GameForm({ gameId }: Props) {
   const [isLogIn, setIsLogIn] = useState(false);
   const [userId, setUserId] = useState(0);
   const [guessedNumber, setGuessedNumber] = useState('');
+  const [isDisabledButton, setIsDisabledButton] = useState(false);
 
   useEffect(() => {
 
@@ -54,7 +55,8 @@ export default function GameForm({ gameId }: Props) {
     }
   };
 
-  const handleGuessedNumberSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleGuessedNumberSubmit = async (event: MouseEvent<HTMLButtonElement>) => {
+    setIsDisabledButton(true);
     try {
       event.preventDefault();
       await play(userId, gameId, guessedNumber);
@@ -63,6 +65,7 @@ export default function GameForm({ gameId }: Props) {
     } catch (error: any) {
       alert(error.response.data.errorMessage);
     }
+    setIsDisabledButton(false);
   };
 
   const handleGuessedNumberChanged = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +74,7 @@ export default function GameForm({ gameId }: Props) {
 
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
-    <div className="main-container d-flex justify-content-center align-items-center mt-3">
+    <div className="main-container d-flex justify-content-center align-items-center">
       {isLoading
         ? <div className="loading-text">Loading the game...</div>
         :
@@ -79,11 +82,11 @@ export default function GameForm({ gameId }: Props) {
           {
             isLogIn
               ?
-              <form onSubmit={handleGuessedNumberSubmit} className="game-form d-flex flex-column justify-content-center">
+              <div className="game-form d-flex flex-column justify-content-center">
                 <span className="header-game">Number Guessing Game</span>
                 <input type="text" className="form-control input-guessedNumber rounded-pill" name="GuessedNumber" placeholder='Enter your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
-                <button className="btn rounded-pill btn-guess" type="submit">Guess 2 digits number</button>
-              </form>
+                <button className="btn rounded-pill btn-guess" type="button" onClick={handleGuessedNumberSubmit} disabled={isDisabledButton}>Guess 2 digits number</button>
+              </div>
               :
               <div>
                 <Button onClick={handleOnClick} className="d-flex flex-row align-items-center -gap-sm">

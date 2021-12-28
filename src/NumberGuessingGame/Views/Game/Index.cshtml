@@ -1,7 +1,19 @@
-﻿@model GameIndexViewModel
+﻿@using NodaTime
+@model GameIndexViewModel
 @inject IOptions<ApplicationConfiguration> config
 @{
   ViewData["Title"] = "Number Guessing Game";
+}
+
+@functions {
+  const string zoneId = "Asia/Bangkok";
+  DateTimeZone timeZone = DateTimeZoneProviders.Tzdb[zoneId];
+
+  DateTime ToLocalTime(DateTime utcDateTime) {
+    var instant = Instant.FromDateTimeUtc(utcDateTime);
+    var localTime = instant.InZone(timeZone).ToDateTimeUnspecified();
+    return localTime;
+  }
 }
 
 @Html.React(
@@ -29,12 +41,12 @@ gameId = Model.Game.Id
       {
         <tr>
           @{
-            var player = Model.Players[0];
+            var player = Model.Players[index];
           }
           <td scope="row">@(index + 1)</td>
           <td scope="row">@string.Format("{0:00}", player.GuessedNumber + index * 7)</td>
           <td scope="row" class="-text-left">@string.Format("{0}xxxxx", player.User.FirstName.Substring(0,2))</td>
-          <td scope="row">@player.PlayedAtUtc</td>
+          <td scope="row">@ToLocalTime(player.PlayedAtUtc)</td>
         </tr>
       }
     </tbody>

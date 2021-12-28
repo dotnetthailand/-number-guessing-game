@@ -19,7 +19,6 @@ body {
   background-image: url($urlImage + "/background.jpg");
 
   &.-none-background {
-    margin: 25px 0px;
     min-height: unset;
     background-image: unset;
     max-height: calc(100vh - $height-background - 10px - 1rem);
@@ -35,6 +34,7 @@ body {
 
     &.-none-background {
       max-height: 100vh;
+      overflow: unset;
     }
 
     > .loading-text {
