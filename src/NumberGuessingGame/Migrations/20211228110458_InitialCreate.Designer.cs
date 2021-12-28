@@ -12,7 +12,7 @@ using NumberGuessingGame.Models;
 namespace NumberGuessingGame.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    [Migration("20211228084121_InitialCreate")]
+    [Migration("20211228110458_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -63,9 +63,9 @@ namespace NumberGuessingGame.Migrations
                         .HasColumnType("int")
                         .HasColumnName("user_id");
 
-                    b.Property<string>("GuessedNumber")
+                    b.Property<int>("GuessedNumber")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)")
+                        .HasColumnType("int")
                         .HasColumnName("guessed_number");
 
                     b.Property<DateTime>("PlayedAtUtc")
@@ -80,8 +80,7 @@ namespace NumberGuessingGame.Migrations
 
                     b.HasIndex("GameId", "GuessedNumber")
                         .IsUnique()
-                        .HasDatabaseName("ix_player_game_id_guessed_number")
-                        .HasFilter("[guessed_number] IS NOT NULL");
+                        .HasDatabaseName("ix_player_game_id_guessed_number");
 
                     b.ToTable("player", (string)null);
                 });

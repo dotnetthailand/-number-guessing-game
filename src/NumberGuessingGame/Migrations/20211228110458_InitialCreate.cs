@@ -48,7 +48,7 @@ namespace NumberGuessingGame.Migrations
                 {
                     user_id = table.Column<int>(type: "int", nullable: false),
                     game_id = table.Column<int>(type: "int", nullable: false),
-                    guessed_number = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),
+                    guessed_number = table.Column<int>(type: "int", maxLength: 2, nullable: false),
                     played_at_utc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -72,8 +72,7 @@ namespace NumberGuessingGame.Migrations
                 name: "ix_player_game_id_guessed_number",
                 table: "player",
                 columns: new[] { "game_id", "guessed_number" },
-                unique: true,
-                filter: "[guessed_number] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_player_user_id",

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NumberGuessingGame.Models;
@@ -32,31 +31,44 @@ public class GameController : Controller
             await dbContext.SaveChangesAsync();
         }
 
-        var players = dbContext.Players.Include(p => p.User).Include(p => p.Game).ToList();
+        var players = dbContext.Players
+            .Where(p => p.GameId == game.Id)
+            .Include(p => p.User).Include(p => p.Game).ToList()
+            .OrderBy(p => p.GuessedNumber)
+            .ToList();
+
         return View(new GameIndexViewModel() { Game = game, Players = players });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Play(Player player)
+    public async Task<IActionResult> Play(PlayRequest playRequest)
     {
-        if (player.GuessedNumber?.Length != 2)
+        if (playRequest.GuessedNumber?.Length != 2)
         {
             throw new InvalidOperationException("Guessed number must be 2 digits");
         }
 
-        var existingPlayer = dbContext.Players.SingleOrDefault(p => p.GameId == player.GameId && p.UserId == player.UserId);
-        if (existingPlayer != null)
+        var guessedNumber = int.Parse(playRequest.GuessedNumber);
+        var existingGuessedNumber = dbContext.Players.SingleOrDefault(p => p.GameId == playRequest.GameId && p.GuessedNumber == guessedNumber);
+        if (existingGuessedNumber != null)
+        {
+            throw new InvalidOperationException($"The number '{playRequest.GuessedNumber}' has been guessed");
+        }
+
+        var player = dbContext.Players.SingleOrDefault(p => p.GameId == playRequest.GameId && p.UserId == playRequest.UserId);
+        if (player != null)
         {
             throw new InvalidOperationException("You has already played the game.");
         }
 
-        var existingGuessedNumber = dbContext.Players.SingleOrDefault(p => p.GameId == player.GameId && p.GuessedNumber == player.GuessedNumber);
-        if (existingGuessedNumber != null)
+        player = new Player
         {
-            throw new InvalidOperationException($"The number '{player.GuessedNumber}' has been guessed");
-        }
+            UserId = playRequest.UserId,
+            GameId = playRequest.GameId,
+            GuessedNumber = guessedNumber,
+            PlayedAtUtc = DateTime.UtcNow,
+        };
 
-        player.PlayedAtUtc = DateTime.UtcNow;
         await dbContext.Players.AddAsync(player);
         await dbContext.SaveChangesAsync();
         return NoContent();

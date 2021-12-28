@@ -1,4 +1,3 @@
-
 namespace NumberGuessingGame.ViewModels
 {
     public class UserResponse

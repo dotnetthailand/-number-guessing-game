@@ -353,3 +353,4 @@ wwwroot/*
 !wwwroot/favicon.ico
 
 appsettings.development.json
+appsettings.production.json
