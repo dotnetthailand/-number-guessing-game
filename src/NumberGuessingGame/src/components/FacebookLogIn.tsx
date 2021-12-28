@@ -1,6 +1,9 @@
 import React, { MouseEvent } from 'react';
 import axios from 'axios';
 import '../scss/style.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFacebook } from '@fortawesome/free-brands-svg-icons'
+import { Button } from 'react-bootstrap';
 
 type Props = {
   returnUrlRelativeToRoot: string;
@@ -9,27 +12,25 @@ type Props = {
 
 export default function FacebookLogIn(props: Props) {
 
-  const handleOnClick = async (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleOnClick = async (event: MouseEvent<HTMLButtonElement>) => {
     const facebookService = new FacebookService();
     try {
       event.preventDefault();
+
       const response = await facebookService.logIn();
       const authResponse = response.authResponse;
-      const grantedScopes = response.authResponse.grantedScopes;
-      console.log('grantedScopes \n%o\n', grantedScopes);
       const facebookAccessToken = authResponse.accessToken;
 
-      var client = axios.create();
+      const client = axios.create();
       const params = new URLSearchParams();
       params.append('facebookAccessToken', facebookAccessToken);
 
       const url = '/game/connect';// URL is from custom route
       await client.post(url, params);
-
       location.href = safeUrlRelativeToRoot(props.returnUrlRelativeToRoot);
 
     } catch (ex) {
-      facebookService.handleException(ex);
+      await facebookService.handleException(ex);
     }
   };
 
@@ -41,11 +42,14 @@ export default function FacebookLogIn(props: Props) {
     return `/${returnUrl}`.replace(/\/+/, '/');
   };
 
+  // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
-    <a className='btn-fb-login' onClick={handleOnClick}>
-      <i className='fa fa-facebook-official' aria-hidden='true'></i>
-      Log in with Facebook
-    </a>
+    <>
+      <FontAwesomeIcon icon={faFacebook} size='2x' color='#1198F6' />
+      <Button onClick={handleOnClick}>
+        Log in with Facebook
+      </Button>
+    </>
   );
 }
 
@@ -58,13 +62,25 @@ interface IFb {
 
 declare let FB: IFb;//reference existing variable from Facebook SDK
 
-// Custom exception
+// Custom exceptions
 class MissingFacebookPermissionException extends Error {
   constructor(public missingPermission: string) {
     super(`missing ${missingPermission} permission`);
   }
 }
 
+class CancelledLoginException extends Error {
+  constructor() {
+    super(`A User cancelled login or did not fully authorize.`);
+  }
+}
+
+// {
+//     scope: 'email', 
+//     return_scopes: true
+// }
+// By setting the return_scopes option to true in the option object when calling FB.login(), 
+// you will receive a list of the granted permissions in the grantedScopes field on the authResponse object.
 class FbScope {
   public return_scopes: boolean = true;
   public scope: string;
@@ -75,8 +91,8 @@ class FbScope {
 
   validateHasAllRequiredPermissions(grantedPermissions: string): void {
     for (let index = 0; index < this.requiredPermissions.length - 1; index++) {
-      let permissionToCheck = this.requiredPermissions[index];
-      let foundIndex = grantedPermissions.indexOf(permissionToCheck);
+      const permissionToCheck = this.requiredPermissions[index];
+      const foundIndex = grantedPermissions.indexOf(permissionToCheck);
       console.log(`found permission at index ${foundIndex}`);
       if (foundIndex < 0) {
         throw new MissingFacebookPermissionException(permissionToCheck);
@@ -86,37 +102,38 @@ class FbScope {
 }
 
 class FacebookService {
-  private readonly fbScope: FbScope = new FbScope(['email', 'public_profile']);
+  private readonly fbScope: FbScope = new FbScope([
+    'email',
+    'public_profile',
+  ]);
 
   logIn(): Promise<any> {
-    let promise = new Promise<void>((resolve, reject) => {
+    const promise = new Promise<void>((resolve, reject) => {
       FB.login(response => {
         try {
           if (response.status === 'connected') {
-            let grantedScopes: string = response.authResponse.grantedScopes;
+            const grantedScopes: string = response.authResponse.grantedScopes;
             // Also validate if user allow all required permission
             this.fbScope.validateHasAllRequiredPermissions(grantedScopes);
             resolve(response);
           } else if (response.status === 'not_authorized') {
-            // The person is logged into Facebook, but not your app.
-            reject(response);
+            reject(new Error('A user is logged in Facebook, but not your app'));
           } else {
-            // The person is not logged into Facebook, so we're not sure if
-            // they are logged into this app or not.
-            reject('user not logged into Facebook');
+            // The person is not logged into Facebook, so we're not sure if they are logged into this app or not.
+            reject(new CancelledLoginException());
           }
-
         } catch (ex) {
           reject(ex);
         }
 
       }, this.fbScope);
     });
+
     return promise;
   }
 
   getLogInStatus(): Promise<any> {
-    let promise = new Promise<void>((resolve, reject) => {
+    const promise = new Promise<void>((resolve, reject) => {
       const forceGetLogInStatus = true;
       FB.getLoginStatus(response => {
         try {
@@ -148,15 +165,20 @@ class FacebookService {
     return promise;
   }
 
-  async handleException(response: any): Promise<void> {
-    if (!(response instanceof MissingFacebookPermissionException)) {
-      alert('Error, please retry log in again');
+  async handleException(errorResponse: any): Promise<void> {
+    if (errorResponse instanceof MissingFacebookPermissionException) {
+      const ex = errorResponse as MissingFacebookPermissionException;
+      await this.removeApp();
+      alert(`Error, please allow '${ex.missingPermission}' permission`);
       return;
     }
 
-    const ex = response as MissingFacebookPermissionException;
-    await this.removeApp();
-    alert(`Error, please allow '${ex.missingPermission}' permission`);
+    if (errorResponse instanceof CancelledLoginException) {
+      console.error(`Just return we can't handle it`);
+      return;
+    }
+
+    alert('Something wrong, please retry log in again!!!');
   };
 
   // User can start log in again without any permission issue

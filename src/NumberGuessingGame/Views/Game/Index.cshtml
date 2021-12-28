@@ -5,12 +5,32 @@
   var userId = Context.Session.GetInt32(nameof(NumberGuessingGame.Models.User.Id));
 }
 
-<ul>
-  @foreach (var item in Model.Players)
-  {
-    <li>@item.User.FirstName</li>
-  }
-</ul>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Guessed number</th>
+      <th scope="col">First name - Last name (mask)</th>
+      <th scope="col">Played at</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    @for (var index = 0; index < Model.Players.Count; index++)
+    {
+      <tr>
+        @{
+          var player = Model.Players[index];
+        }
+        <td scope="row">@(index + 1)</td>
+        <td scope="row">@player.GuessedNumber</td>
+        <td scope="row">@player.User.FirstName - @player.User.LastName </td>
+        <td scope="row">@player.PlayedAtUtc</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
 
 @Html.React(
 "NumberGuessingGame.FacebookLogIn",

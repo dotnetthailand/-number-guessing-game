@@ -52,6 +52,8 @@ const config = {
   externals: {
     react: 'React'
   },
+  // https://webpack.js.org/configuration/devtool/
+  devtool: 'inline-source-map',
 };
 
 const configWithTimeMeasures = new SpeedMeasurePlugin().wrap(config);

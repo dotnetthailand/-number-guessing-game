@@ -1,6 +1,6 @@
 @inject IOptions<ApplicationConfiguration> config
 
-<script type="text/javascript">
+@* <script type="text/javascript">
   window.fbAsyncInit = function () {
     FB.init({
       appId: @config.Value.FacebookAppId,//test
@@ -20,4 +20,18 @@
     js.src = "//connect.facebook.net/en_US/sdk.js";
     fjs.parentNode.insertBefore(js, fjs);
   }(document, 'script', 'facebook-jssdk'));
+</script> *@
+
+
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId: @config.Value.FacebookAppId,//test
+      autoLogAppEvents : true,
+      xfbml            : true,
+      version          : 'v12.0'
+    });
+  };
 </script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    
