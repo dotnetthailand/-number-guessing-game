@@ -13,7 +13,6 @@ namespace NumberGuessingGame
 
         public Startup(IConfiguration configuration) => this.configuration = configuration;
 
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -24,12 +23,6 @@ namespace NumberGuessingGame
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddReact();
             services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName).AddChakraCore();
-
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(20);//You can set Time   
-            });
 
             services
                 .AddControllersWithViews();
@@ -70,8 +63,6 @@ namespace NumberGuessingGame
             });
 
             app.UseStaticFiles();
-            app.UseSession();
-
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

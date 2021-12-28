@@ -2,8 +2,18 @@
 @inject IOptions<ApplicationConfiguration> config
 @{
   ViewData["Title"] = "Home Page";
-  var userId = Context.Session.GetInt32(nameof(NumberGuessingGame.Models.User.Id));
 }
+
+@Html.React(
+"NumberGuessingGame.FacebookLogIn",
+new
+{
+// https://stackoverflow.com/a/48538207/1872200
+//returnUrlRelativeToRoot = Context.Request.Query["returnUrl"]
+gameId = Model.Game.Id
+}
+)
+
 
 <table class="table table-striped">
   <thead>
@@ -30,25 +40,3 @@
     }
   </tbody>
 </table>
-
-
-@Html.React(
-"NumberGuessingGame.FacebookLogIn",
-new
-{
-siteName = config.Value.SiteName,
-// https://stackoverflow.com/a/48538207/1872200
-returnUrlRelativeToRoot = Context.Request.Query["returnUrl"]
-}
-)
-
-<form action="/game/play" method="post">
-
-  <input type="text" name="GuessedNumber">
-  <input type="hidden" name="GameId" value="@Model.Game.Id">
-  <input type="hidden" name="UserId" value="@userId">
-  <button type="submit">Guess</button>
-</form>
-
-
-@Html.React("NumberGuessingGame.Counter", new { initValue = 99})

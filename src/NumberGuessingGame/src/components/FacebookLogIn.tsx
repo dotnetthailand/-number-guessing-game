@@ -1,200 +1,104 @@
-import React, { MouseEvent } from 'react';
+import React, { MouseEvent, useEffect, useState } from 'react';
 import axios from 'axios';
 import '../scss/style.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFacebook } from '@fortawesome/free-brands-svg-icons'
 import { Button } from 'react-bootstrap';
+import FacebookService from '../FacebookService';
 
 type Props = {
-  returnUrlRelativeToRoot: string;
-  siteName: string;
+  gameId: number;
 };
 
-export default function FacebookLogIn(props: Props) {
+const facebookService = new FacebookService();
+
+export default function FacebookLogIn({ gameId }: Props) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLogIn, setIsLogIn] = useState(false);
+  const [userId, setUserId] = useState(0);
+
+  useEffect(() => {
+
+    const getLogInStatus = async () => {
+      const response = await facebookService.getLogInStatus();
+      if (response.status !== 'connected') {
+        setIsLoading(false)
+        return;
+      }
+      const facebookAccessToken = response.authResponse.accessToken;
+      const connectResponse = await connectUser(facebookAccessToken);
+      setUserId(connectResponse.data.id);
+      setIsLogIn(true);
+      setIsLoading(false)
+    };
+
+    // Delay for FB SDK to be ready
+    setTimeout(() => getLogInStatus(), 2000);
+
+  }, []);
 
   const handleOnClick = async (event: MouseEvent<HTMLButtonElement>) => {
-    const facebookService = new FacebookService();
     try {
       event.preventDefault();
 
-      const response = await facebookService.logIn();
-      const authResponse = response.authResponse;
+      const logInResponse = await facebookService.logIn();
+      const authResponse = logInResponse.authResponse;
       const facebookAccessToken = authResponse.accessToken;
-
-      const client = axios.create();
-      const params = new URLSearchParams();
-      params.append('facebookAccessToken', facebookAccessToken);
-
-      const url = '/game/connect';// URL is from custom route
-      await client.post(url, params);
-      location.href = safeUrlRelativeToRoot(props.returnUrlRelativeToRoot);
+      const connectResponse = await connectUser(facebookAccessToken);
+      setUserId(connectResponse.data.id);
+      setIsLogIn(true);
 
     } catch (ex) {
       await facebookService.handleException(ex);
     }
   };
 
-  const safeUrlRelativeToRoot = (returnUrl: string): string => {
-    if (!returnUrl) return '/';
-
-    // Add / prefix to make replace work both with and without / in return URL
-    // Expected output is URL has / prefix
-    return `/${returnUrl}`.replace(/\/+/, '/');
-  };
-
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
     <>
-      <FontAwesomeIcon icon={faFacebook} size='2x' color='#1198F6' />
-      <Button onClick={handleOnClick}>
-        Log in with Facebook
-      </Button>
+      {isLoading
+        ? <div>Loading the game...</div>
+        :
+        <div>
+          {
+            isLogIn
+              ?
+              <form action="/game/play" method="post">
+                <input type="text" name="GuessedNumber" placeholder='Put your guessed number' />
+                <input type="hidden" name="GameId" value={gameId} />
+                <input type="hidden" name="UserId" value={userId} />
+                <button type="submit">Guess</button>
+              </form>
+              :
+              <div>
+                <FontAwesomeIcon icon={faFacebook} size='2x' color='#1198F6' />
+                <Button onClick={handleOnClick}>
+                  Log in with Facebook to play a game
+                </Button>
+              </div>
+          }
+        </div>
+      }
     </>
   );
 }
 
-interface IFb {
-  login(callback: (response: any) => any, scope: FbScope): void;
-  getLoginStatus(callback: (response: any) => any, forceGetLogInStatus: boolean): void;
-  api(url: string, callback: (response: any) => any): void;
-  api(url: string, method: string, callback: (response: any) => any): void;
+async function connectUser(facebookAccessToken: string) {
+  const client = axios.create();
+  const params = new URLSearchParams();
+  params.append('facebookAccessToken', facebookAccessToken);
+  const url = '/game/connect'; // URL is from custom route
+  return await client.post<User>(url, params);
 }
 
-declare let FB: IFb;//reference existing variable from Facebook SDK
+// function getSafeUrlRelativeToRoot(returnUrl: string): string {
+//   if (!returnUrl) return '/';
 
-// Custom exceptions
-class MissingFacebookPermissionException extends Error {
-  constructor(public missingPermission: string) {
-    super(`missing ${missingPermission} permission`);
-  }
-}
+//   // Add / prefix to make replace work both with and without / in return URL
+//   // Expected output is URL has / prefix
+//   return `/${returnUrl}`.replace(/\/+/, '/');
+// };
 
-class CancelledLoginException extends Error {
-  constructor() {
-    super(`A User cancelled login or did not fully authorize.`);
-  }
-}
-
-// {
-//     scope: 'email', 
-//     return_scopes: true
-// }
-// By setting the return_scopes option to true in the option object when calling FB.login(), 
-// you will receive a list of the granted permissions in the grantedScopes field on the authResponse object.
-class FbScope {
-  public return_scopes: boolean = true;
-  public scope: string;
-
-  constructor(private requiredPermissions: string[]) {
-    this.scope = requiredPermissions.join(',');
-  }
-
-  validateHasAllRequiredPermissions(grantedPermissions: string): void {
-    for (let index = 0; index < this.requiredPermissions.length - 1; index++) {
-      const permissionToCheck = this.requiredPermissions[index];
-      const foundIndex = grantedPermissions.indexOf(permissionToCheck);
-      console.log(`found permission at index ${foundIndex}`);
-      if (foundIndex < 0) {
-        throw new MissingFacebookPermissionException(permissionToCheck);
-      }
-    }
-  }
-}
-
-class FacebookService {
-  private readonly fbScope: FbScope = new FbScope([
-    'email',
-    'public_profile',
-  ]);
-
-  logIn(): Promise<any> {
-    const promise = new Promise<void>((resolve, reject) => {
-      FB.login(response => {
-        try {
-          if (response.status === 'connected') {
-            const grantedScopes: string = response.authResponse.grantedScopes;
-            // Also validate if user allow all required permission
-            this.fbScope.validateHasAllRequiredPermissions(grantedScopes);
-            resolve(response);
-          } else if (response.status === 'not_authorized') {
-            reject(new Error('A user is logged in Facebook, but not your app'));
-          } else {
-            // The person is not logged into Facebook, so we're not sure if they are logged into this app or not.
-            reject(new CancelledLoginException());
-          }
-        } catch (ex) {
-          reject(ex);
-        }
-
-      }, this.fbScope);
-    });
-
-    return promise;
-  }
-
-  getLogInStatus(): Promise<any> {
-    const promise = new Promise<void>((resolve, reject) => {
-      const forceGetLogInStatus = true;
-      FB.getLoginStatus(response => {
-        try {
-          // The response object is returned with a status field that lets the
-          // app know the current login status of the person.
-          // Full docs on the response object can be found in the documentation
-          // for FB.getLoginStatus().
-
-          //list of response.status
-          //'connected', use connected to our app
-          //not_authorized, The person is logged into Facebook, but not your app.
-
-          //other status
-          // The person is not logged into Facebook, so we're not sure if
-          // they are logged into this app or not.
-
-          //useful properties that can get from response
-          //response.authResponse.userID,
-          //response.authResponse.accessToken
-          console.log('get log in status \n%o\n', response);
-          resolve(response);
-
-        } catch (ex) {
-          reject(ex);
-        }
-
-      }, forceGetLogInStatus);
-    });
-    return promise;
-  }
-
-  async handleException(errorResponse: any): Promise<void> {
-    if (errorResponse instanceof MissingFacebookPermissionException) {
-      const ex = errorResponse as MissingFacebookPermissionException;
-      await this.removeApp();
-      alert(`Error, please allow '${ex.missingPermission}' permission`);
-      return;
-    }
-
-    if (errorResponse instanceof CancelledLoginException) {
-      console.error(`Just return we can't handle it`);
-      return;
-    }
-
-    alert('Something wrong, please retry log in again!!!');
-  };
-
-  // User can start log in again without any permission issue
-  removeApp(): Promise<void> {
-    let promise = new Promise<void>((resolve, reject) => {
-      FB.api('/me/permissions', 'delete', (response: any) => {
-        try {
-          console.log('remove app response \n%o\n', response);
-          resolve();
-        } catch (ex) {
-          reject(ex);
-        }
-      });
-    });
-
-    // Return promise immediately
-    return promise;
-  }
+type User = {
+  id: number;
 }

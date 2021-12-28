@@ -12,7 +12,7 @@ using NumberGuessingGame.Models;
 namespace NumberGuessingGame.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    [Migration("20211227154916_InitialCreate")]
+    [Migration("20211228073600_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

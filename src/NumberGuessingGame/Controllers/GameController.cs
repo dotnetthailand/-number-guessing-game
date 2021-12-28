@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using FacebookCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -24,9 +23,9 @@ public class GameController : Controller
         {
             game = new Game()
             {
-                Title = "เกมทายผล",
-                Rule = "Rule",
-                FinishedUtc = DateTime.UtcNow
+                Title = "The number guessing game from 2 digits of letter",
+                Rule = "A user can play only one time",
+                FinishedUtc = new DateTime(2021, 12, 30, 8, 0, 0, DateTimeKind.Utc)
             };
 
             await dbContext.Games.AddAsync(game);
@@ -37,20 +36,17 @@ public class GameController : Controller
         return View(new GameIndexViewModel() { Game = game, Players = players });
     }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
+    [HttpPost]
     public async Task<IActionResult> Play(Player player)
     {
+        player.PlayedAtUtc = DateTime.UtcNow;
         await dbContext.Players.AddAsync(player);
         await dbContext.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Connect([FromForm] string facebookAccessToken)
+    public async Task<UserResponse> Connect([FromForm] string facebookAccessToken)
     {
         // TODO better error response to client to show why we have error
         // ValidateFacebookAccessToken(request);
@@ -73,8 +69,7 @@ public class GameController : Controller
             var user = GetUser(email);
             if (user != null)
             {
-                HttpContext.Session.SetInt32(nameof(Models.User.Id), user.Id);
-                return NoContent();
+                return new UserResponse { Id = user.Id };
             }
 
             user = new User()
@@ -89,11 +84,8 @@ public class GameController : Controller
 
             await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();
-
-            HttpContext.Session.SetInt32(nameof(Models.User.Id), user.Id);
+            return new UserResponse { Id = user.Id };
         }
-
-        return NoContent();
     }
 
     private User GetUser(string email)
