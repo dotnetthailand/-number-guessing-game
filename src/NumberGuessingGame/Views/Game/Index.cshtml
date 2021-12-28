@@ -9,8 +9,9 @@
   const string zoneId = "Asia/Bangkok";
   DateTimeZone timeZone = DateTimeZoneProviders.Tzdb[zoneId];
 
-  DateTime ToLocalTime(DateTime utcDateTime) {
-    var instant = Instant.FromDateTimeUtc(utcDateTime);
+  DateTime ToLocalTime(DateTime utcDateTime)
+  {
+    var instant = Instant.FromDateTimeUtc(DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc));
     var localTime = instant.InZone(timeZone).ToDateTimeUnspecified();
     return localTime;
   }
