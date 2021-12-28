@@ -16,7 +16,7 @@ export default function GameForm({ gameId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLogIn, setIsLogIn] = useState(false);
   const [userId, setUserId] = useState(0);
-  const [guessedNumber, setGuessedNumber] = useState(0);
+  const [guessedNumber, setGuessedNumber] = useState('');
 
   useEffect(() => {
 
@@ -66,7 +66,7 @@ export default function GameForm({ gameId }: Props) {
   };
 
   const handleGuessedNumberChanged = async (event: ChangeEvent<HTMLInputElement>) => {
-    setGuessedNumber(Number.parseInt(event.currentTarget.value))
+    setGuessedNumber(event.currentTarget.value);
   }
 
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
@@ -109,13 +109,12 @@ type User = {
   id: number;
 };
 
-
-async function play(userId: number, gameId: number, guessNumber: number) {
+async function play(userId: number, gameId: number, guessNumber: string) {
   const client = axios.create();
   const params = new URLSearchParams();
   params.append('UserId', userId.toString());
   params.append('GameId', gameId.toString());
-  params.append('GuessedNumber', guessNumber.toString());
+  params.append('GuessedNumber', guessNumber);
   const url = '/game/play';
   await client.post(url, params);
 }
