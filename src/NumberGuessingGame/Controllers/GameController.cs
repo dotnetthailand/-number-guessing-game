@@ -39,10 +39,27 @@ public class GameController : Controller
     [HttpPost]
     public async Task<IActionResult> Play(Player player)
     {
+        if (player.GuessedNumber?.Length != 2)
+        {
+            throw new InvalidOperationException("Guessed number must be 2 digits");
+        }
+
+        var existingPlayer = dbContext.Players.SingleOrDefault(p => p.GameId == player.GameId && p.UserId == player.UserId);
+        if (existingPlayer != null)
+        {
+            throw new InvalidOperationException("You has already played the game.");
+        }
+
+        var existingGuessedNumber = dbContext.Players.SingleOrDefault(p => p.GameId == player.GameId && p.GuessedNumber == player.GuessedNumber);
+        if (existingGuessedNumber != null)
+        {
+            throw new InvalidOperationException($"The number '{player.GuessedNumber}' has been guessed");
+        }
+
         player.PlayedAtUtc = DateTime.UtcNow;
         await dbContext.Players.AddAsync(player);
         await dbContext.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return NoContent();
     }
 
     [HttpPost]

@@ -16,25 +16,23 @@ namespace NumberGuessingGame.Models
                 .HasMany(g => g.Users)
                 .WithMany(u => u.Games)
                 .UsingEntity<Player>(
-                    j => j // For Player to User
+                    p => p // For Player to User
                         .HasOne(p => p.User)
                         .WithMany(u => u.Players)
                         .HasForeignKey(p => p.UserId),
-                    j => j // For Player to Game
+                    p => p // For Player to Game
                         .HasOne(p => p.Game)
                         .WithMany(g => g.Players)
                         .HasForeignKey(p => p.GameId),
-                    j =>
+                    p =>
                     {
-                        j.ToTable("player");
-                        // j.Property(pt => pt.PublicationDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        j.HasKey(p => new { p.UserId, p.GameId });
+                        p.ToTable("player");
+                        p.HasKey(p => new { p.GameId, p.UserId });
+                        p.Property(p => p.GuessedNumber).HasMaxLength(2);
+                        p.HasIndex(u => new { u.GameId, u.GuessedNumber }).IsUnique();
                     });
 
-
-            modelBuilder.Entity<User>().ToTable("user")
-                .Property(u => u.ProfilePictureUrl).HasMaxLength(512);
-
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.Entity<Game>().ToTable("game");
         }
 

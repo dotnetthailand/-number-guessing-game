@@ -8,7 +8,7 @@ namespace NumberGuessingGame.Models
         public int GameId { get; set; }
         public Game Game { get; set; }
 
-        public int GuessedNumber { get; set; }
+        public string GuessedNumber { get; set; }
         public DateTime PlayedAtUtc { get; set; }
     }
 }

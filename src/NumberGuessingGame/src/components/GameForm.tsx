@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from 'react';
 import axios from 'axios';
 import '../scss/style.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -12,10 +12,11 @@ type Props = {
 
 const facebookService = new FacebookService();
 
-export default function FacebookLogIn({ gameId }: Props) {
+export default function GameForm({ gameId }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLogIn, setIsLogIn] = useState(false);
   const [userId, setUserId] = useState(0);
+  const [guessedNumber, setGuessedNumber] = useState(0);
 
   useEffect(() => {
 
@@ -53,6 +54,21 @@ export default function FacebookLogIn({ gameId }: Props) {
     }
   };
 
+  const handleGuessedNumberSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    try {
+      event.preventDefault();
+      await play(userId, gameId, guessedNumber);
+      alert("Thanks for playing the game with us");
+      location.href = '/'; // Reload the page
+    } catch (error: any) {
+      alert(error.response.data);
+    }
+  };
+
+  const handleGuessedNumberChanged = async (event: ChangeEvent<HTMLInputElement>) => {
+    setGuessedNumber(Number.parseInt(event.currentTarget.value))
+  }
+
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
     <>
@@ -63,11 +79,9 @@ export default function FacebookLogIn({ gameId }: Props) {
           {
             isLogIn
               ?
-              <form action="/game/play" method="post">
-                <input type="text" name="GuessedNumber" placeholder='Put your guessed number' />
-                <input type="hidden" name="GameId" value={gameId} />
-                <input type="hidden" name="UserId" value={userId} />
-                <button type="submit">Guess</button>
+              <form onSubmit={handleGuessedNumberSubmit}>
+                <input type="text" name="GuessedNumber" placeholder='Put your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
+                <button type="submit">Guess 2 digits number</button>
               </form>
               :
               <div>
@@ -91,14 +105,17 @@ async function connectUser(facebookAccessToken: string) {
   return await client.post<User>(url, params);
 }
 
-// function getSafeUrlRelativeToRoot(returnUrl: string): string {
-//   if (!returnUrl) return '/';
-
-//   // Add / prefix to make replace work both with and without / in return URL
-//   // Expected output is URL has / prefix
-//   return `/${returnUrl}`.replace(/\/+/, '/');
-// };
-
 type User = {
   id: number;
+};
+
+
+async function play(userId: number, gameId: number, guessNumber: number) {
+  const client = axios.create();
+  const params = new URLSearchParams();
+  params.append('UserId', userId.toString());
+  params.append('GameId', gameId.toString());
+  params.append('GuessedNumber', guessNumber.toString());
+  const url = '/game/play';
+  await client.post(url, params);
 }

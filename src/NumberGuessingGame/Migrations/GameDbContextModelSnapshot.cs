@@ -53,27 +53,33 @@ namespace NumberGuessingGame.Migrations
 
             modelBuilder.Entity("NumberGuessingGame.Models.Player", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
-
                     b.Property<int>("GameId")
                         .HasColumnType("int")
                         .HasColumnName("game_id");
 
-                    b.Property<int>("GuessedNumber")
+                    b.Property<int>("UserId")
                         .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("GuessedNumber")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)")
                         .HasColumnName("guessed_number");
 
                     b.Property<DateTime>("PlayedAtUtc")
                         .HasColumnType("datetime2")
                         .HasColumnName("played_at_utc");
 
-                    b.HasKey("UserId", "GameId")
+                    b.HasKey("GameId", "UserId")
                         .HasName("pk_player");
 
-                    b.HasIndex("GameId")
-                        .HasDatabaseName("ix_player_game_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_player_user_id");
+
+                    b.HasIndex("GameId", "GuessedNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_game_id_guessed_number")
+                        .HasFilter("[guessed_number] IS NOT NULL");
 
                     b.ToTable("player", (string)null);
                 });
@@ -118,6 +124,11 @@ namespace NumberGuessingGame.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_user");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_email")
+                        .HasFilter("[email] IS NOT NULL");
 
                     b.ToTable("user", (string)null);
                 });

@@ -48,12 +48,12 @@ namespace NumberGuessingGame.Migrations
                 {
                     user_id = table.Column<int>(type: "int", nullable: false),
                     game_id = table.Column<int>(type: "int", nullable: false),
-                    guessed_number = table.Column<int>(type: "int", nullable: false),
+                    guessed_number = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: true),
                     played_at_utc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_player", x => new { x.user_id, x.game_id });
+                    table.PrimaryKey("pk_player", x => new { x.game_id, x.user_id });
                     table.ForeignKey(
                         name: "fk_player_games_game_id",
                         column: x => x.game_id,
@@ -69,9 +69,23 @@ namespace NumberGuessingGame.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_player_game_id",
+                name: "ix_player_game_id_guessed_number",
                 table: "player",
-                column: "game_id");
+                columns: new[] { "game_id", "guessed_number" },
+                unique: true,
+                filter: "[guessed_number] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_player_user_id",
+                table: "player",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_email",
+                table: "user",
+                column: "email",
+                unique: true,
+                filter: "[email] IS NOT NULL");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

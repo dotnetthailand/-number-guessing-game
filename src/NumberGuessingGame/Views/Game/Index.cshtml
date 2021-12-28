@@ -1,11 +1,11 @@
 ﻿@model GameIndexViewModel
 @inject IOptions<ApplicationConfiguration> config
 @{
-  ViewData["Title"] = "Home Page";
+  ViewData["Title"] = "Number Guessing Game";
 }
 
 @Html.React(
-"NumberGuessingGame.FacebookLogIn",
+"NumberGuessingGame.GameForm",
 new
 {
 // https://stackoverflow.com/a/48538207/1872200
