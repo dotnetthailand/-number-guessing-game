@@ -43,31 +43,31 @@ public class GameController : Controller
     [HttpPost]
     public async Task<IActionResult> Play(PlayRequest playRequest)
     {
-        if (playRequest.GuessedNumber == null)
+        if (string.IsNullOrWhiteSpace(playRequest.GuessedNumber))
         {
-            throw new InvalidOperationException("Please enter 2 digits guessed number.");
+            throw new InvalidOperationException("Please enter 2 digits number.");
         }
 
         playRequest.GuessedNumber = playRequest.GuessedNumber.Trim();
         if (playRequest.GuessedNumber.Length != 2)
         {
-            throw new InvalidOperationException("Guessed number must be 2 digits");
+            throw new InvalidOperationException("Guessed number must be 2 digits.");
+        }
+
+        var existingPlayer = dbContext.Players.SingleOrDefault(p => p.GameId == playRequest.GameId && p.UserId == playRequest.UserId);
+        if (existingPlayer != null)
+        {
+            throw new InvalidOperationException($"You already have played the game with number '{existingPlayer.GuessedNumber:00}'.");
         }
 
         var guessedNumber = int.Parse(playRequest.GuessedNumber);
         var existingGuessedNumber = dbContext.Players.SingleOrDefault(p => p.GameId == playRequest.GameId && p.GuessedNumber == guessedNumber);
         if (existingGuessedNumber != null)
         {
-            throw new InvalidOperationException($"The number '{playRequest.GuessedNumber}' has been guessed");
+            throw new InvalidOperationException($"The number '{playRequest.GuessedNumber}' has been taken.");
         }
 
-        var player = dbContext.Players.SingleOrDefault(p => p.GameId == playRequest.GameId && p.UserId == playRequest.UserId);
-        if (player != null)
-        {
-            throw new InvalidOperationException("You has already played the game.");
-        }
-
-        player = new Player
+        var player = new Player
         {
             UserId = playRequest.UserId,
             GameId = playRequest.GameId,

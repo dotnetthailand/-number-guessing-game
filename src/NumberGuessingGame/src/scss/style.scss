@@ -78,15 +78,14 @@ body {
       font-size: 28px;
       font-weight: lighter;
       padding: 10px 0px;
-      height: auto;  
+      height: auto;
     }
 
-    > .btn-guess { 
+    > .btn-guess {
       font-size: 26px;
     }
   }
 }
-
 
 .-gap-sm {
   @media (min-width: 330px) {
@@ -116,7 +115,21 @@ body {
     text-align: left;
   }
 
-  td:nth-child(1), 
+  td.-current-user {
+    position: relative;
+  }
+
+  td.-current-user::after {
+    content: "You >>";
+    font-style: italic;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    color: #F00;
+    font-size: 1.2rem;
+  }
+
+  td:nth-child(1),
   th:nth-child(1) {
     width: 10%;
   }
