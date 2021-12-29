@@ -1,4 +1,4 @@
-interface IFb {
+export interface IFb {
   login(callback: (response: any) => any, scope: FbScope): void;
   getLoginStatus(callback: (response: any) => any, forceGetLogInStatus: boolean): void;
   api(url: string, callback: (response: any) => any): void;
@@ -7,21 +7,26 @@ interface IFb {
 
 declare let FB: IFb;//reference existing variable from Facebook SDK
 
+type FacebookApiResponse = {
+  accessToken: string;
+  userID: number;
+}
+
 export default class FacebookService {
   private readonly fbScope: FbScope = new FbScope([
     'email',
     'public_profile',
   ]);
 
-  logIn(): Promise<any> {
-    const promise = new Promise<void>((resolve, reject) => {
+  logIn(): Promise<FacebookApiResponse> {
+    const promise = new Promise<FacebookApiResponse>((resolve, reject) => {
       FB.login(response => {
         try {
           if (response.status === 'connected') {
             const grantedScopes: string = response.authResponse.grantedScopes;
             // Also validate if user allow all required permission
             this.fbScope.validateHasAllRequiredPermissions(grantedScopes);
-            resolve(response);
+            resolve(response.authResponse as FacebookApiResponse)
           } else if (response.status === 'not_authorized') {
             reject(new Error('A user is logged in Facebook, but not your app'));
           } else {
@@ -38,30 +43,36 @@ export default class FacebookService {
     return promise;
   }
 
-  getLogInStatus(): Promise<any> {
-    const promise = new Promise<void>((resolve, reject) => {
+  // https://developers.facebook.com/docs/reference/javascript/FB.getLoginStatus
+  getLogInStatus(): Promise<FacebookApiResponse> {
+    const promise = new Promise<FacebookApiResponse>((resolve, reject) => {
+      // call FB.getLoginStatus with the second parameter set to true to force a roundtrip to Facebook, 
+      // which effectively refreshes the cache of the response object.
+      // If you call FB.getLoginStatus on every page load, be careful not to set this parameter for each as it will significantly increase the number of requests to Facebook's servers, 
+      // and thus decrease the performance of your application.
       const forceGetLogInStatus = true;
+
       FB.getLoginStatus(response => {
         try {
-          // The response object is returned with a status field that lets the
-          // app know the current login status of the person.
-          // Full docs on the response object can be found in the documentation
-          // for FB.getLoginStatus().
+          // list of response.status
+          // 'connected' => use connected to our app
+          // 'not_authorized' => The person is logged into Facebook, but not your app.
 
-          //list of response.status
-          //'connected', use connected to our app
-          //not_authorized, The person is logged into Facebook, but not your app.
-
-          //other status
+          // other status
           // The person is not logged into Facebook, so we're not sure if
           // they are logged into this app or not.
 
-          //useful properties that can get from response
-          //response.authResponse.userID,
-          //response.authResponse.accessToken
-          console.log('get log in status \n%o\n', response);
-          resolve(response);
-
+          // useful properties that can get from response
+          // response.authResponse.userID,
+          // response.authResponse.accessToken
+          if (response.status == 'connected') {
+            resolve(response.authResponse as FacebookApiResponse);
+          } else if (response.status === 'not_authorized') {
+            reject(new Error('A user is logged in Facebook, but not your app'));
+          } else {
+            // The person is not logged into Facebook, so we're not sure if they are logged into this app or not.
+            reject(new CancelledLoginException());
+          }
         } catch (ex) {
           reject(ex);
         }

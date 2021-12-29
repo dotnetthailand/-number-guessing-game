@@ -4,7 +4,9 @@ import '../scss/style.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFacebook } from '@fortawesome/free-brands-svg-icons'
 import { Button } from 'react-bootstrap';
-import FacebookService from '../FacebookService';
+import FacebookService, { IFb } from '../FacebookService';
+
+declare let FB: IFb;//reference existing variable from Facebook SDK
 
 type Props = {
   gameId: number;
@@ -22,20 +24,27 @@ export default function GameForm({ gameId }: Props) {
   useEffect(() => {
 
     const getLogInStatus = async () => {
-      const response = await facebookService.getLogInStatus();
-      if (response.status !== 'connected') {
-        setIsLoading(false)
-        return;
+      while (typeof FB === 'undefined') {
+        await delay(250);
+        console.log('next delay');
       }
-      const facebookAccessToken = response.authResponse.accessToken;
-      const connectResponse = await connectUser(facebookAccessToken);
-      setUserId(connectResponse.data.id);
-      setIsLogIn(true);
+
+      try {
+        const logInResponse = await facebookService.getLogInStatus();
+        const connectResponse = await connectUser(logInResponse.accessToken, logInResponse.userID);
+        setUserId(connectResponse.data.id);
+        setIsLogIn(true);
+      } catch (ex) {
+        // A user hasn't logged in, no need to handle.
+        console.warn(ex);
+      }
       setIsLoading(false)
     };
 
-    // Delay for FB SDK to be ready
-    setTimeout(() => getLogInStatus(), 1100);
+    getLogInStatus();
+
+    // // Delay for FB SDK to be ready
+    // setTimeout(() => getLogInStatus(), 2000);
 
   }, []);
 
@@ -44,9 +53,8 @@ export default function GameForm({ gameId }: Props) {
       event.preventDefault();
 
       const logInResponse = await facebookService.logIn();
-      const authResponse = logInResponse.authResponse;
-      const facebookAccessToken = authResponse.accessToken;
-      const connectResponse = await connectUser(facebookAccessToken);
+      const connectResponse = await connectUser(logInResponse.accessToken, logInResponse.userID);
+
       setUserId(connectResponse.data.id);
       setIsLogIn(true);
 
@@ -89,11 +97,11 @@ export default function GameForm({ gameId }: Props) {
                   name="GuessedNumber"
                   placeholder='Enter your guessed number'
                   onChange={handleGuessedNumberChanged}
-                  maxLength={2}/>
-                <button 
-                  className="btn rounded-pill btn-guess" 
-                  type="button" 
-                  onClick={handleGuessedNumberSubmit} 
+                  maxLength={2} />
+                <button
+                  className="btn rounded-pill btn-guess"
+                  type="button"
+                  onClick={handleGuessedNumberSubmit}
                   disabled={isDisabledButton}>Guess 2 digits number</button>
               </div>
               :
@@ -110,10 +118,11 @@ export default function GameForm({ gameId }: Props) {
   );
 }
 
-async function connectUser(facebookAccessToken: string) {
+async function connectUser(facebookAccessToken: string, facebookAppScopedUserId: number) {
   const client = axios.create();
   const params = new URLSearchParams();
   params.append('facebookAccessToken', facebookAccessToken);
+  params.append('facebookAppScopedUserId', facebookAppScopedUserId.toString());
   const url = '/game/connect'; // URL is from custom route
   return await client.post<User>(url, params);
 }
@@ -130,4 +139,10 @@ async function play(userId: number, gameId: number, guessNumber: string) {
   params.append('GuessedNumber', guessNumber);
   const url = '/game/play';
   await client.post(url, params);
+}
+
+function delay(millisecond) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, millisecond);
+  });
 }

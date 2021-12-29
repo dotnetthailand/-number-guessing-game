@@ -8,8 +8,14 @@ namespace NumberGuessingGame.Models
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.ToTable("user");
-            builder.HasIndex(u => u.Email).IsUnique();
-            builder.Property(u=>u.ProfilePictureUrl).HasMaxLength(512);
+
+            // Remove index
+            // Alter null able
+            //builder.HasIndex(u => u.Email).IsUnique();
+
+            builder.Property(u => u.FacebookAppScopedUserId).IsRequired();
+            builder.HasIndex(u => u.FacebookAppScopedUserId).IsUnique();
+            builder.Property(u => u.ProfilePictureUrl).HasMaxLength(512);
         }
     }
 }

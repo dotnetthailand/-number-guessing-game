@@ -17,7 +17,7 @@ public class GameController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var game = dbContext.Games.SingleOrDefault(g => g.Id == 1);
+        var game = dbContext.Games.SingleOrDefault();// allow only one game for now
         if (game == null)
         {
             game = new Game()
@@ -81,7 +81,7 @@ public class GameController : Controller
     }
 
     [HttpPost]
-    public async Task<UserResponse> Connect([FromForm] string facebookAccessToken)
+    public async Task<UserResponse> Connect(string facebookAccessToken, long facebookAppScopedUserId)
     {
         // TODO better error response to client to show why we have error
         // ValidateFacebookAccessToken(request);
@@ -94,14 +94,22 @@ public class GameController : Controller
             var jsonResponse = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
 
-            string email = result.email.ToString();
-            long facebookAppScopedUserId = Convert.ToInt64(result.id);
-            string name = result.name.ToString();
-            string firstName = result.first_name.ToString();
-            string lastName = result.last_name.ToString();
-            string profilePictureUrl = result.picture.data.url.ToString();
+            var resultId = Convert.ToInt64(result.id);
+            if (facebookAppScopedUserId != resultId)
+            {
+                throw new InvalidOperationException("Facebook scoped user ID is mismatched.");
+            }
 
-            var user = GetUser(email);
+            // Email is optional because if a user does not set a default email or register with a phone number, it will return null.
+            var email = Convert.ToString(result.email);
+            email = null;
+
+            string name = Convert.ToString(result.name);
+            string firstName = Convert.ToString(result.first_name);
+            string lastName = Convert.ToString(result.last_name);
+            string profilePictureUrl = Convert.ToString(result.picture.data.url);
+
+            var user = GetUser(facebookAppScopedUserId);
             if (user != null)
             {
                 return new UserResponse { Id = user.Id };
@@ -109,12 +117,13 @@ public class GameController : Controller
 
             user = new User()
             {
-                Email = email,
                 FacebookAppScopedUserId = facebookAppScopedUserId,
                 FirstName = firstName,
                 LastName = lastName,
+
                 Name = name,
-                ProfilePictureUrl = profilePictureUrl
+                Email = email,
+                ProfilePictureUrl = profilePictureUrl,
             };
 
             await dbContext.Users.AddAsync(user);
@@ -123,9 +132,6 @@ public class GameController : Controller
         }
     }
 
-    private User GetUser(string email)
-    {
-        var user = dbContext.Users.SingleOrDefault(u => u.Email == email);
-        return user;
-    }
+    private User GetUser(long facebookScopedUserId) =>
+        dbContext.Users.SingleOrDefault(u => u.FacebookAppScopedUserId == facebookScopedUserId);
 }
