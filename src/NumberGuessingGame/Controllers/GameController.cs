@@ -43,7 +43,13 @@ public class GameController : Controller
     [HttpPost]
     public async Task<IActionResult> Play(PlayRequest playRequest)
     {
-        if (playRequest.GuessedNumber?.Length != 2)
+        if (playRequest.GuessedNumber == null)
+        {
+            throw new InvalidOperationException("Please enter 2 digits guessed number.");
+        }
+
+        playRequest.GuessedNumber = playRequest.GuessedNumber.Trim();
+        if (playRequest.GuessedNumber.Length != 2)
         {
             throw new InvalidOperationException("Guessed number must be 2 digits");
         }

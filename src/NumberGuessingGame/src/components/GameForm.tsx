@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, MouseEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
 import axios from 'axios';
 import '../scss/style.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -84,14 +84,23 @@ export default function GameForm({ gameId }: Props) {
               ?
               <div className="game-form d-flex flex-column justify-content-center">
                 <span className="header-game">Number Guessing Game</span>
-                <input type="text" className="form-control input-guessedNumber rounded-pill" name="GuessedNumber" placeholder='Enter your guessed number' onChange={handleGuessedNumberChanged} maxLength={2} />
-                <button className="btn rounded-pill btn-guess" type="button" onClick={handleGuessedNumberSubmit} disabled={isDisabledButton}>Guess 2 digits number</button>
+                <input type="text"
+                  className="form-control input-guessedNumber rounded-pill"
+                  name="GuessedNumber"
+                  placeholder='Enter your guessed number'
+                  onChange={handleGuessedNumberChanged}
+                  maxLength={2}/>
+                <button 
+                  className="btn rounded-pill btn-guess" 
+                  type="button" 
+                  onClick={handleGuessedNumberSubmit} 
+                  disabled={isDisabledButton}>Guess 2 digits number</button>
               </div>
               :
               <div>
                 <Button onClick={handleOnClick} className="d-flex flex-row align-items-center -gap-sm">
                   <FontAwesomeIcon icon={faFacebook} size='2x' color='#fff' />
-                  Log in with Facebook to play a game
+                  Please log in with Facebook to play the game.
                 </Button>
               </div>
           }
