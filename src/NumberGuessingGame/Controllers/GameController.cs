@@ -102,8 +102,6 @@ public class GameController : Controller
 
             // Email is optional because if a user does not set a default email or register with a phone number, it will return null.
             var email = Convert.ToString(result.email);
-            email = null;
-
             string name = Convert.ToString(result.name);
             string firstName = Convert.ToString(result.first_name);
             string lastName = Convert.ToString(result.last_name);
