@@ -4,7 +4,6 @@ using React.AspNet;
 using Microsoft.EntityFrameworkCore;
 using NumberGuessingGame.Models;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace NumberGuessingGame
 {
@@ -49,9 +48,10 @@ namespace NumberGuessingGame
                 var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
                 var exception = exceptionHandlerPathFeature.Error;
                 await context.Response.WriteAsJsonAsync(
-                    new { 
-                        errorMessage = exception.Message, 
-                        errorType = exception.GetType().Name 
+                    new
+                    {
+                        errorMessage = exception.Message,
+                        errorType = exception.GetType().Name
                     }
                 );
             }));
@@ -75,6 +75,13 @@ namespace NumberGuessingGame
                     name: "default",
                     pattern: "{controller=Game}/{action=Index}/{id?}"
                 );
+
+                // Catch all for single page app
+                // endpoints.MapControllerRoute(
+                //     name: "default",
+                //     pattern: "{path?}", // wildcard route in ASP.NET's route
+                //     defaults: new { controller = "Game", action = "Index" }
+                // );
             });
         }
     }

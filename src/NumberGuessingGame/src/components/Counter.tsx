@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 // How use in .cshtml file
 // @Html.React("NumberGuessingGame.Counter", new {})
-type IProps = {
+type Props = {
   initValue: number;
 }
 
 //const Counter = (props: IProps) => {
-export default  function Counter(props: IProps) {
-  const [count, setCount] = useState(props.initValue);
+export default function Counter({ initValue }: Props) {
+  const [count, setCount] = useState(initValue);
 
   const handleButtonClick = () => {
     setCount(count + 1);
@@ -23,5 +23,3 @@ export default  function Counter(props: IProps) {
     </>
   )
 };
-
-//export default Counter;

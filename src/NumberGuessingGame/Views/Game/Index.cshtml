@@ -17,15 +17,15 @@
   }
 }
 
-@Html.React(
-"NumberGuessingGame.GameForm",
-new
-{
-// https://stackoverflow.com/a/48538207/1872200
-//returnUrlRelativeToRoot = Context.Request.Query["returnUrl"]
-gameId = Model.Game.Id
-}
-)
+@*
+  https://stackoverflow.com/a/48538207/1872200
+  returnUrlRelativeToRoot = Context.Request.Query["returnUrl"]
+*@
+@* @Html.React( "NumberGuessingGame.GameForm", new { gameId = Model.Game.Id }) *@
+@* @Html.React("NumberGuessingGame.Counter", new { initValue = 99}) *@
+
+@Html.ReactRouter("NumberGuessingGame.RouterComponent", new { gameId = Model.Game.Id })
+
 <div class="main-container -none-background">
   <table class="table table-played">
     <thead>
