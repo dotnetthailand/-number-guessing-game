@@ -24,7 +24,7 @@
 @* @Html.React( "NumberGuessingGame.GameForm", new { gameId = Model.Game.Id }) *@
 @* @Html.React("NumberGuessingGame.Counter", new { initValue = 99}) *@
 
-@Html.ReactRouter("NumberGuessingGame.RouterComponent", new { gameId = Model.Game.Id })
+@Html.ReactRouter("NumberGuessingGame.RouterComponent", new { gameId = Model.Game.Id, count = 99 })
 
 <div class="main-container -none-background">
   <table class="table table-played">

@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFacebook } from '@fortawesome/free-brands-svg-icons'
 import { Button } from 'react-bootstrap';
 import FacebookService, { IFb } from '../FacebookService';
+import { useSelector, RootStateOrAny, useDispatch } from 'react-redux';
 
 declare let FB: IFb;//reference existing variable from Facebook SDK
 
@@ -14,7 +15,12 @@ type Props = {
 
 const facebookService = new FacebookService();
 
+// https://stackoverflow.com/a/63350992/1872200
 export default function GameForm({ gameId }: Props) {
+  const count = useSelector((state: RootStateOrAny) => state.CounterReducer.count);
+  console.log(count);
+  const dispatch = useDispatch();
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLogIn, setIsLogIn] = useState(false);
   const [userId, setUserId] = useState(0);
@@ -83,6 +89,11 @@ export default function GameForm({ gameId }: Props) {
   // https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
   return (
     <div className="main-container d-flex justify-content-center align-items-center">
+
+      <h1>count {count} </h1>
+      <div>
+        <button onClick={() => dispatch({ type: 'increase', payload: 1 })}>add one</button>
+      </div>
       {isLoading
         ? <div className="loading-text">Loading the game...</div>
         :
